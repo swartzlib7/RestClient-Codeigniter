@@ -1,19 +1,35 @@
-RestClient-Codeigniter
-======================
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Rest Client
+ *
+ * @package generic
+ * @author André Gonçalves
+ * @copyright Copyright (c) 2013 Reimagine
+ * @link reimagine.cc
+ * @since Version 1.0
+ * @version 1.0
+ *
+ */
 
-RestClient for Codeigniter an open source application development framework for PHP 5.1.6 or newer.
+// ------------------------------------------------------------------------
 
-How use?
-=====================
-    <?php
-    
-    Class RestClient extends  CI_Controller {
+/**
+ * Main
+ *
+ * @package generic
+ * @subpackage Controllers
+ * @category Controllers
+ * @author André Gonçalves
+ *
+ */
+Class RestClient extends  CI_Controller {
 	
 	private $data;
 	
 	public function __construct() {
 		parent::__construct();
 		$this->data = array();
+		setlocale(LC_MONETARY, 'pt_BR');
 	}
 	
 	/**
@@ -38,5 +54,4 @@ How use?
 			...
 		}
 	}
-    }
-    ?>
+}
