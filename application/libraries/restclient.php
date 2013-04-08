@@ -1,4 +1,5 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+set_time_limit(0);
 /**
  * Rest Client
  * 
@@ -29,7 +30,7 @@ class RestClient {
 	/**
 	 * Version.
 	 */
-	const VERSION = '1.0.0';
+	const VERSION = '1.0.1';
 	
 	/**
 	 * 
@@ -69,7 +70,7 @@ class RestClient {
 	protected $password;
 	/**
 	 * The body of our response
-	 * @var unknown_type
+	 * @var string
 	 */
 	protected $responseBody;
 	/**
@@ -80,9 +81,15 @@ class RestClient {
 	
 	/**
 	 * Headers of http
-	 * @var $headers
+	 * @var array
 	 */
 	protected $headers = array();
+	
+	/**
+	 * Service timeout
+	 * @var int
+	 */
+	protected $timeout;
 	
 	/**
 	 * construct
@@ -101,19 +108,17 @@ class RestClient {
 	 * @param array $config
 	 */
 	public function config($config = array()) {
-		$this->url = array_key_exists('url', $config)? $config['url'] : null;
-		
-		$verb	= array_key_exists('verb', $config)? $config['verb'] : 'GET';
-		$this->setVerb($verb);
-		
-		$this->requestBody = array_key_exists('requestBody', $config)? $config['requestBody'] : null;
-		$this->requestLength = 0;
-		$this->username	= array_key_exists('username', $config)? $config['username'] :null;
-		$this->password	= array_key_exists('password', $config)? $config['password'] :null;
-		$this->responseBody = null;
 		$this->responseInfo = null;
+		$this->requestLength = 0;
 		
-		$this->headers = array_key_exists('headers', $config)? $config['headers'] : array('Accept: application/json');
+		$this->setUrl(array_key_exists('url', $config)? $config['url'] : null);		
+		$this->setTimeout(array_key_exists('timeout', $config)? $config['timeout'] : 0);		
+		$this->setVerb(array_key_exists('verb', $config)? $config['verb'] : 'GET');
+		$this->setUsername(array_key_exists('username', $config)? $config['username'] :null);
+		$this->setPassword(array_key_exists('password', $config)? $config['password'] :null);
+		$this->setHeaders(array_key_exists('headers', $config)? $config['headers'] : array('Accept: application/json'));
+		$this->requestBody = array_key_exists('requestBody', $config)? $config['requestBody'] : null;
+		
 		if ($this->requestBody !== null && $this->verb != 'PUT') {
 			$this->buildPostBody();
 		}
@@ -152,7 +157,11 @@ class RestClient {
 	 * @param string $username
 	 */
 	public function setUsername ($username) {
-		$this->username = $username;
+		if($username) {
+			$this->username = $username;
+		} else {
+			$this->username = null;
+		}
 	}
 	
 	/**
@@ -170,7 +179,11 @@ class RestClient {
 	 * @param string $password
 	 */
 	public function setPassword ($password) {
-		$this->password = $password;
+		if($password) {
+			$this->password = $password;
+		} else {
+			$this->password = null;
+		}
 	}
 	
 	/**
@@ -241,6 +254,15 @@ class RestClient {
 	 */
 	public function setUrl ($url) {
 		$this->url = $url;
+	}
+	
+	/**
+	 * setTimeout
+	 * @access public
+	 * @param int $seconds
+	 */
+	public function setTimeout($seconds) {
+		$this->timeout = $seconds;
 	}
 	
 	/**
@@ -395,7 +417,7 @@ class RestClient {
 	 * @param unknown_type $curlHandle
 	 */
 	protected function setCurlOpts (&$curlHandle) {
-		curl_setopt($curlHandle, CURLOPT_TIMEOUT, 10);
+		curl_setopt($curlHandle, CURLOPT_TIMEOUT, $this->timeout);
 		curl_setopt($curlHandle, CURLOPT_URL, $this->url);
 		curl_setopt($curlHandle, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curlHandle, CURLOPT_HTTPHEADER, $this->headers);
